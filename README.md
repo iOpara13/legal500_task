@@ -32,6 +32,7 @@ Error trying to run edr monitor states it needs a Slack webhook
 
 <img width="548" height="401" alt="Error on running edr monitor" src="https://github.com/user-attachments/assets/f72261e4-137b-4718-bfaa-61dc445909e6" />
 
-Successful run of edr report (the yellow 1 was from an earlier run with a mispelling on an accepted value in the schema)
+Successful run of edr report
 
-<img width="1237" height="716" alt="Successfull run on running edr report" src="https://github.com/user-attachments/assets/9a3792c8-e8ee-4346-aa0f-d7609d5d0d87" />
+<img width="1235" height="695" alt="Successfull run on running edr report" src="https://github.com/user-attachments/assets/bc2110ef-e70d-4515-8728-c9575dd168c4" />
+
