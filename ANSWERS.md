@@ -28,7 +28,7 @@ Providesvclear and searchable lineage (dbt's lineage gets a bit unwieldy in larg
       If not, the Fivetran sync has failed and pipeline needs to be retriggered via Dagster.
     Step 2 - Clone the repo and configure your profiles.yml. Downloaded dependent packages and trigger `dbt debug` to ensure connection works then run `edt report`
     Step 3 - Check the Test Results tab for failing tests, click on it and view the results to investigate issues.
-    Step 4 - Check codebase for latest commit before failure/find the offending commit, rollback changes and retrigger pipeline.
+    Step 4 - Check codebase for latest commit before failure/find the offending commit, rollback changes and retrigger pipeline. Else open ticket for hotfix.
     Step 5 - Send necessary comms to stakeholders
 
   4. Adding schema validations/rowcount validation on the ingestion tool, stops bad data ever landing can be done directly in the software 
