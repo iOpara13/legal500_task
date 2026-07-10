@@ -11,6 +11,7 @@ Justifications for derived flags can be found in the comments in the fct_firm_ra
 - Volumes anomalies default should be left against 2 days, just checking against 1 day is too strict.
 - Using the created_ts to deduplicate records in stg_submissions. There is a general pattern where the submitted_at = created_at my deduplication maintains that pattern. This pattern also helps in setting the submitted_at when it was placed in the future, thus my instinct to preserve it. In a real scenario I would check the source system or with an SME for confirmation of what is considered correct.
 - Submission is not on the critical path for building the rankings table so it can have a separate tag to isolate pipelines.
+- For runbook question I assume there'd be a link for connecting to dbt and setting up profile's which I would link to in a real runbook.
 
 ## Trade-offs
 - Full table refreshes, fine for small data volumes this would cause performance overhead with large tables. Would also not be appropriate if FiveTran sync provides partial data, this would delete historical records.
