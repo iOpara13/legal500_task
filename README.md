@@ -7,7 +7,8 @@ Justifications for derived flags can be found in the comments in the fct_firm_ra
 - A ranking_tier of 0 is meant to represent unranked as it is not supposed to be null so setting nulls as 0
 - The use of an incremental strategy/CDC is not being assessed. In a production env to protect against processing large amounts of data and slowing the pipeline down I would use an incremental strategy.
 - When there is a duplicate on the grain chosen for int__rankings (edition_id, firm_name, practice_area, sub_practice_area) published records are prioritised. Thus published post status takes precedence over modified_ts in deduplication for int__rankings
-- Volumes of data should not vary more than 20% of average - this would obviously be tweaked or right sized via collabarating with application team
+- Volumes of data should not vary more than 8% of average - this would obviously be tweaked or right sized via collabarating with application team but its about half of what caused the incident.
+- Volumes anomalies default should be left against 2 days, just checking against 1 day is too strict.
 - Using the created_ts to deduplicate records in stg_submissions. There is a general pattern where the submitted_at = created_at my deduplication maintains that pattern. This pattern also helps in setting the submitted_at when it was placed in the future, thus my instinct to preserve it. In a real scenario I would check the source system or with an SME for confirmation of what is considered correct.
 - Submission is not on the critical path for building the rankings table so it can have a separate tag to isolate pipelines.
 
