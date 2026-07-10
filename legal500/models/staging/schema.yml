@@ -1,0 +1,254 @@
+version: 2
+
+models:
+  - name: stg_rankings
+    description: "Staging model containing ranking records."
+    tests:
+      - elementary.volume_anomalies:
+          arguments:
+            timestamp_column: etl_loaded_at
+            time_bucket:
+              period: hour
+              count: 24
+            ignore_small_changes:
+              spike_failure_percent_threshold: 8
+              drop_failure_percent_threshold: 8
+          config:
+            tags: ['elementary']
+            description: >
+              Allow only 8% on either side for volume, based on the 15% drop causing an escalation 
+              by setting it at about half that it should provide early warning before any major
+              issues reaching the clients product team without causing a brittle pipeline. Upper
+              threshold can be tweaked with discussed with internal product based on the application
+              capabilities.
+      - elementary.schema_changes_from_baseline:
+          arguments:
+            enforce_types: true
+          config:
+            tags: ['elementary']
+            description: >
+              Not all schema changes are breaking like column additions. But to avoid introducing 
+              breaking changes to a live application its best to set a predefined schema so 
+              additions doesnt fail the pipeline but breaking changes are escalated immediately.
+    columns:
+      - name: ranking_id
+        data_type: VARCHAR
+        description: "Unique identifier for the ranking."
+        tests:
+          - not_null:
+              config:
+                description: >
+                  Primary key so default error is required to ensure table integrity 
+                  would also indicate deduplication step may be compromised
+          - unique:
+              config:
+                description: >
+                  Primary key so default error is required to avoid introducing 
+                  duplication into downstream models
+
+      - name: edition_year
+        data_type: INT
+        description: "Legal 500 edition year."
+
+      - name: edition_id
+        data_type: VARCHAR
+        description: "Unique identifier for the Legal 500 edition."
+
+      - name: firm_ref
+        description: "Reference identifier for the firm linking to the firm table."
+        data_type: VARCHAR
+        tests:
+          - not_null:
+              config:
+                description: >
+                  Firm reference is required to get the expected grain for int__rankings
+                  so a error severity is justified.
+          - relationships:
+              arguments:
+                to: ref('stg_firms')
+                field: firm_ref
+              config:
+                description: >
+                  Error severity ensures referential integrity between tables is maintained 
+                  also stops downstream models from being corrupted and potentially introducing
+                  breaking errors into the API as firm_name is a required field downstream
+
+      - name: practice_area_id
+        description: "Reference identifier for the practice area linking to the practice area table."
+        data_type: VARCHAR
+        tests:
+          - not_null:
+              config:
+                description: >
+                  Practice area is required to get the expected grain for int__rankings
+                  so a error severity is justified.
+          - relationships:
+              arguments:
+                to: ref('stg_practice_areas')
+                field: practice_area_id
+              config:
+                description: >
+                  Error severity ensures referential integrity between tables is maintained 
+                  also stops downstream models from being corrupted and potentially introducing
+                  breaking errors into the API as practice_area_ is a required field downstream
+
+      - name: ranking_tier
+        description: "Legal500's ranking assigned to the firm."
+        data_type: INT
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1, 2, 3, 4, 5]
+              config:
+                description: >
+                  Critical data point in the application, should default to 0 if there's no ranking
+                  a null is a breaking bug in the API
+
+      - name: ranking_type
+        description: "Type of ranking."
+        data_type: VARCHAR
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['firm recommended', 'firm to watch']
+              config:
+                description: >
+                  Field used downstream to derive ranking_decision_status which is
+                  used to decide if a firm is ranked or unranked - critical feature
+
+      - name: post_status
+        description: "Status of the ranking post."
+        data_type: VARCHAR
+        tests:
+          - dbt_expectations.expect_column_values_to_have_consistent_casing:
+              config:
+                severity: warn
+                description: >
+                  Feature was stated as a requirement, test to ensure fulfillment
+                  but not a breaking error
+
+      - name: publication_status
+        description: "Publication status."
+        data_type: VARCHAR
+
+      - name: listing_type
+        description: "Listing type of the ranking."
+        data_type: VARCHAR
+
+      - name: commentary
+        description: "Commentary relating to the firm's ranking."
+        data_type: VARCHAR
+
+      - name: modified_ts
+        description: "Timestamp the ranking was last modified in the source."
+        data_type: TIMESTAMP
+        tests:
+          - not_null:
+              config:
+                description: > 
+                  Used for deduplication critical for ensuring downstream tables dont
+                  have duplications introduced
+
+      - name: etl_loaded_at
+        data_type: TIMESTAMP
+        description: "Timestamp when the record was loaded into the warehouse."
+
+  - name: stg_submissions
+    description: "Staging model containing firm submissions for rankings"
+    columns:
+      - name: submission_id
+        description: "Unique identifier for the submission."
+        tests:
+          - not_null:
+              config:
+                description: > 
+                  Primary key so default error is required to ensure table integrity 
+                  would also indicate deduplication step may be compromised
+          - unique:
+              config:
+                description: >
+                  Primary key so default error is required to avoid introducing 
+                  duplication
+    
+      - name: firm_ref
+        description: "Reference identifier for the firm"
+        tests:
+          - not_null:
+              config:
+                description: > 
+                  Error severity ensures referential integrity between tables is maintained 
+                  since the ranking tables have been tagged its possible to run just 
+                  the ranking models without stg_submissions if we want to isolate issues in
+                  stg_submissions affecting the run of rankings
+          - relationships:
+              arguments:
+                to: ref('stg_firms')
+                field: firm_ref
+              config:
+                description: >
+                  Error severity ensures referential integrity between tables is maintained 
+                  since the ranking tables have been tagged its possible to run just 
+                  the ranking models without stg_submissions if we want to isolate issues in
+                  stg_submissions affecting the run of rankings
+
+      - name: practice_area_id
+        description: "Identifier for the practice area."
+
+      - name: edition_year
+        description: "The Legal 500 edition year the submission is for"
+
+      - name: submission_type
+        description: "Type of submission."
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['Law Firm', 'Individual']
+              config:
+                severity: warn
+                description: >
+                  No critical role in the pipeline so only need to alert engineers DQ issues 
+                  may be introduced if failed
+
+      - name: submitted_by_email
+        description: "Email address of the submitter."
+        tests:
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '(?i)^\b[\.A-Z0-9._%+-]+@(?:[A-Z0-9-]+\.)[A-Z]{2,}\b$'
+                is_raw: true
+                row_condition: "submitted_by_email <> 'Invalid Email'"
+              config:
+                severity: warn
+                description: >
+                  No critical role in the pipeline so only need to alert engineers DQ issues 
+                  may be introduced if failed
+
+      - name: submitted_at
+        description: "Timestamp when the submission was made in the source."
+
+      - name: num_referees
+        description: "Number of referees that support the submission."
+
+      - name: status
+        description: "Current submission status."
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['approved', 'submitted', 'rejected', 'in review']
+              config:
+                severity: warn
+                description:  >
+                  No critical role in the pipeline so only need to alert engineers DQ issues 
+                  may be introduced if failed
+      
+      - name: created_ts
+        description: "Timestamp the submission record was created in the source."
+        tests:
+          - not_null:
+              config:
+                description: > 
+                  Used for deduplication, the filter in stg_submissions should mean a null value
+                  should be impossible so definitely error if one is produced
+      
+      - name: etl_loaded_at
+        description: "Timestamp when the record was loaded into the warehouse."

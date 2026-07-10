@@ -1,0 +1,36 @@
+
+name: 'legal500'
+version: '1.0.0'
+
+profile: 'legal500'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:         # directories to be removed by `dbt clean`
+  - "target"
+  - "dbt_packages"
+
+on-run-end:
+  - "{{ elementary.handle_tests_results() if execute }}"
+
+models:
+  legal500:
+    staging:
+      +schema: staging
+    intermediate:
+      +schema: staging
+    analytics:
+      +schema: analytics
+
+vars:
+  submission_type_patterns:
+    law_firm: '(?i)(^law[._\s]firm$|^firm$)'
+    individual: '(?i)(^individual[s]{0,1}$)'
+  ranking_type_patterns:
+    firm_recommended: '(?i)(^firm[s]{0,1}[._\s]{0,3}re[c]{0,3}ommended$)'
+    firm_to_watch: '(?i)(^firm[s]{0,1}[._\s]{0,3}(to|2)[._\s]{0,3}watch$)'

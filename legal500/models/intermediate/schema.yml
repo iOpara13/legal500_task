@@ -1,0 +1,72 @@
+version: 2
+
+models:
+  - name: int__rankings
+    description: >
+      Intermediate model combining firm, ranking, and practice area information.
+      Main feed to fct_firm_rankings
+    tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          arguments:
+            min_value: 400
+          config:
+            description: >
+              Row count floor is 400, each edition year has in the data has 
+              481 and 484 (2024 and 2025 respectively). 
+              Therefore assuming a single year of data has at least 400 records, 
+              if there's less than 400 means that there is not even a 
+              full year of data available in the table which should cause a error
+    columns:
+      - name: edition_id
+        description: "Unique identifier for the Legal 500 edition."
+
+      - name: edition_year
+        description: "Legal 500 edition year."
+
+      - name: country
+        description: "Firm's operating country."
+
+      - name: city
+        description: "Firm's operating city."
+
+      - name: firm_name
+        description: "Name of firm being ranked"
+
+      - name: established_year
+        description: "Year the firm was established."
+
+      - name: practice_group
+        description: "High level grouping that categorises the firm's practice area being ranked."
+
+      - name: practice_area
+        description: "Primary practice area."
+
+      - name: sub_practice_area
+        description: "Practice area that categorises the firm's sub practice area being ranked."
+
+      - name: ranking_tier
+        description: "Legal500's ranking assigned to the firm."
+
+      - name: ranking_type
+        description: "Type of ranking."
+
+      - name: ranking_decision_status
+        description: "Column categorising whether the firm is ranked or unranked."
+
+      - name: post_status
+        description: "Status of the ranking post."
+
+      - name: publication_status
+        description: "Publication status."
+
+      - name: listing_type
+        description: "Listing type of the ranking."
+
+      - name: commentary
+        description: "Commentary relating to the firm's ranking."
+
+      - name: modified_ts
+        description: "Timestamp the ranking was last modified in the source."
+
+      - name: etl_loaded_at
+        description: "Timestamp when the record was loaded into the warehouse."

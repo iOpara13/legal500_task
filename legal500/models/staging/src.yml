@@ -1,0 +1,34 @@
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: firms
+      - name: practice_areas
+      - name: rankings
+        tests:
+        - elementary.data_freshness_sla:
+            arguments:
+              timestamp_column: etl_loaded_at
+              sla_time: "06:20"
+              timezone: "Europe/London"
+            config:
+              tags: ["elementary"]
+              severity: error
+              description: >
+                Pipeline scheduled at 6:00, set error on 20 mins later to
+                alert on call Engineer to check the pipeline and manually trigger
+                to avoid missing SLA.
+      - name: submissions
+        tests:
+        - elementary.data_freshness_sla:
+            arguments:
+              timestamp_column: etl_loaded_at
+              sla_time: "06:20"
+              timezone: "Europe/London"
+            config:
+              tags: ["elementary"]
+              severity: error
+              description: >
+                Pipeline scheduled at 6:00, set error on 20 mins later to
+                alert on call Engineer to check the pipeline and manually trigger
+                to avoid missing SLA.

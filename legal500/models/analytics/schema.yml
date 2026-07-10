@@ -1,0 +1,94 @@
+version: 2
+
+models:
+  - name: fct_firm_rankings
+    description: >
+      Fact table containing Legal 500 firm rankings enriched with firm,
+      geography, practice area, and analytical ranking indicators.
+    tests:
+      - elementary.volume_anomalies:
+          arguments:
+            timestamp_column: etl_loaded_at
+            time_bucket:
+              period: hour
+              count: 24
+            ignore_small_changes:
+              spike_failure_percent_threshold: 8
+              drop_failure_percent_threshold: 8
+          config:
+            tags: ['elementary']
+            description: >
+              Allow only 8% on either side for volume, based on the 15% drop causing an escalation 
+              by setting it at about half that it should provide early warning before any major
+              issues reaching the clients product team without causing a brittle pipeline. Upper
+              threshold can be tweaked with discussed with internal product based on the application
+              capabilities.
+    columns:
+      - name: edition_id
+        description: "Unique identifier for the Legal 500 edition."
+
+      - name: edition_year
+        description: "Publication year of the Legal 500 edition."
+
+      - name: country
+        description: "Firm's operating country."
+
+      - name: city
+        description: "Firm's operating city."
+
+      - name: firm_name
+        description: "Name of firm being ranked"
+
+      - name: established_year
+        description: "Year the firm was established."
+
+      - name: practice_group
+        description: "High level grouping that categorises the firm's practice area being ranked."
+
+      - name: practice_area
+        description: "Primary practice area."
+
+      - name: sub_practice_area
+        description: "Sub-practice area within the primary practice area."
+
+      - name: ranking_tier
+        description: "Legal500's ranking assigned to the firm."
+
+      - name: ranking_type
+        description: "Type of ranking."
+
+      - name: ranking_decision_status
+        description: "Column categorising whether the firm is ranked or unranked."
+
+      - name: post_status
+        description: "Status of the ranking post."
+
+      - name: publication_status
+        description: "Publication status."
+
+      - name: listing_type
+        description: "Listing type of the ranking."
+
+      - name: commentary
+        description: "Commentary relating to the firm's ranking."
+
+      - name: active_ranking_flg
+        description: "Indicates whether the ranking is currently active."
+
+      - name: archived_ranking_flg
+        description: "Indicates whether the ranking is currently archived."
+
+      - name: top_firms_flg
+        description: "Indicates whether the firm is classified as a top firm defined by being a tier 1 firm."
+
+      - name: top_firms_to_watch_flg
+        description: "Indicates whether the firm is classified as a tier 1 Top Firm to Watch."
+
+      - name: latest_ranking_flg
+        description: "Indicates whether this is the firm's latest ranking across editions."
+
+      - name: modified_ts
+        description: "Timestamp the ranking was last modified in the source."
+
+      - name: etl_loaded_at
+        description: "Timestamp when the record was loaded into the warehouse."
