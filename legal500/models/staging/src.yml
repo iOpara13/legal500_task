@@ -9,26 +9,26 @@ sources:
         - elementary.data_freshness_sla:
             arguments:
               timestamp_column: etl_loaded_at
-              sla_time: "06:20"
+              sla_time: "06:30"
               timezone: "Europe/London"
             config:
               tags: ["elementary"]
               severity: error
               description: >
-                Pipeline scheduled at 6:00, set error on 20 mins later to
-                alert on call Engineer to check the pipeline and manually trigger
-                to avoid missing SLA.
+                Pipeline scheduled at 6:00, so data should already be loaded in the
+                raw table so set error on 30 mins later to alert on call Engineer to 
+                check the pipeline and manually trigger to avoid missing SLA.
       - name: submissions
         tests:
         - elementary.data_freshness_sla:
             arguments:
               timestamp_column: etl_loaded_at
-              sla_time: "06:20"
+              sla_time: "06:30"
               timezone: "Europe/London"
             config:
               tags: ["elementary"]
               severity: error
               description: >
-                Pipeline scheduled at 6:00, set error on 20 mins later to
-                alert on call Engineer to check the pipeline and manually trigger
-                to avoid missing SLA.
+                Pipeline scheduled at 6:00, so data should already be loaded in the
+                raw table so set error on 30 mins later to alert on call Engineer to 
+                check the pipeline and manually trigger to avoid missing SLA.
